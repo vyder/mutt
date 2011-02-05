@@ -199,7 +199,7 @@ int draw_sidebar(int menu) {
         }
 
 
-//	if ( SidebarWidth == 0 ) return 0;
+       /* if ( SidebarWidth == 0 ) return 0; */
        if (SidebarWidth > 0 && option (OPTSIDEBAR)
            && delim_len >= SidebarWidth) {
          unset_option (OPTSIDEBAR);
@@ -273,15 +273,15 @@ int draw_sidebar(int menu) {
 			tmp->msgcount = Context->msgcount;
 			tmp->msg_flagged = Context->flagged;
 		}
-		// check whether Maildir is a prefix of the current folder's path
+		/* check whether Maildir is a prefix of the current folder's path */
 		short maildir_is_prefix = 0;
 		if ( (strlen(tmp->path) > strlen(Maildir)) &&
 			(strncmp(Maildir, tmp->path, strlen(Maildir)) == 0) )
         		maildir_is_prefix = 1;
-		// calculate depth of current folder and generate its display name with indented spaces
+		/* calculate depth of current folder and generate its display name with indented spaces */
 		int sidebar_folder_depth = 0;
 		char *sidebar_folder_name;
-		sidebar_folder_name = basename(tmp->path);
+		sidebar_folder_name = mutt_basename(tmp->path);
 		if ( maildir_is_prefix ) {
 			char *tmp_folder_name;
 			int i;
@@ -299,11 +299,11 @@ int draw_sidebar(int menu) {
  				}
  				else
  					tmp_folder_name = tmp->path;
- 				sidebar_folder_name = malloc(strlen(basename(tmp_folder_name)) + sidebar_folder_depth + 1);
+				sidebar_folder_name = malloc(strlen(mutt_basename(tmp_folder_name)) + sidebar_folder_depth + 1);
 				for (i=0; i < sidebar_folder_depth; i++)
 					sidebar_folder_name[i]=' ';
 				sidebar_folder_name[i]=0;
- 				strncat(sidebar_folder_name, basename(tmp_folder_name), strlen(basename(tmp_folder_name)) + sidebar_folder_depth);
+				strncat(sidebar_folder_name, mutt_basename(tmp_folder_name), strlen(mutt_basename(tmp_folder_name)) + sidebar_folder_depth);
 			}
 		}
 		printw( "%.*s", SidebarWidth - delim_len + 1,
