@@ -340,6 +340,68 @@ static int buffy_maildir_hasnew (BUFFY* mailbox)
   return rc;
 }
 
+/* update message counts for the sidebar */
+void buffy_maildir_update (BUFFY* mailbox)
+{
+  char path[_POSIX_PATH_MAX];
+  DIR *dirp;
+  struct dirent *de;
+  char *p;
+
+  mailbox->msgcount = 0;
+  mailbox->msg_unread = 0;
+  mailbox->msg_flagged = 0;
+
+  snprintf (path, sizeof (path), "%s/new", mailbox->path);
+        
+  if ((dirp = opendir (path)) == NULL)
+  {   
+    mailbox->magic = 0;
+    return;
+  } 
+      
+  while ((de = readdir (dirp)) != NULL)
+  {
+    if (*de->d_name == '.')
+      continue;
+
+    if (!(p = strstr (de->d_name, ":2,")) || !strchr (p + 3, 'T')) {
+      mailbox->new = 1;
+      mailbox->msgcount++;
+      mailbox->msg_unread++;
+    }
+  }
+
+  closedir (dirp);
+  snprintf (path, sizeof (path), "%s/cur", mailbox->path);
+        
+  if ((dirp = opendir (path)) == NULL)
+  {   
+    mailbox->magic = 0;
+    return;
+  } 
+      
+  while ((de = readdir (dirp)) != NULL)
+  {
+    if (*de->d_name == '.')
+      continue;
+
+    if (!(p = strstr (de->d_name, ":2,")) || !strchr (p + 3, 'T')) {
+      mailbox->msgcount++;
+      if ((p = strstr (de->d_name, ":2,"))) {
+        if (!strchr (p + 3, 'T')) {
+          if (!strchr (p + 3, 'S'))
+            mailbox->msg_unread++;
+          if (strchr(p + 3, 'F'))
+            mailbox->msg_flagged++;
+        }
+      }
+    }
+  }
+
+  closedir (dirp);
+}
+
 /* returns 1 if mailbox has new mail */ 
 static int buffy_mbox_hasnew (BUFFY* mailbox, struct stat *sb)
 {
@@ -369,6 +431,20 @@ static int buffy_mbox_hasnew (BUFFY* mailbox, struct stat *sb)
     mailbox->newly_created = 0;
 
   return rc;
+}
+
+/* update message counts for the sidebar */
+void buffy_mbox_update (BUFFY* mailbox)
+{
+  CONTEXT *ctx = NULL;
+
+  ctx = mx_open_mailbox(mailbox->path, M_READONLY | M_QUIET | M_NOSORT | M_PEEK, NULL);
+  if(ctx)
+  {
+    mailbox->msgcount = ctx->msgcount;
+    mailbox->msg_unread = ctx->unread;
+    mx_close_mailbox(ctx, 0);
+  }
 }
 
 int mutt_buffy_check (int force)
@@ -444,16 +520,19 @@ int mutt_buffy_check (int force)
       {
       case M_MBOX:
       case M_MMDF:
+	buffy_mbox_update (tmp);
 	if (buffy_mbox_hasnew (tmp, &sb) > 0)
 	  BuffyCount++;
 	break;
 
       case M_MAILDIR:
+	buffy_maildir_update (tmp);
 	if (buffy_maildir_hasnew (tmp) > 0)
 	  BuffyCount++;
 	break;
 
       case M_MH:
+	mh_buffy_update (tmp->path, &tmp->msgcount, &tmp->msg_unread, &tmp->msg_flagged);
 	if ((tmp->new = mh_buffy (tmp->path)) > 0)
 	  BuffyCount++;
 	break;
