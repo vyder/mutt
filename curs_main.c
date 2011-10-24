@@ -523,7 +523,7 @@ int mutt_index_menu (void)
      {
        if (mutt_buffy_notify ())
        {
-         menu->redraw |= REDRAW_FULL;
+         menu->redraw |= REDRAW_STATUS;
          if (option (OPTBEEPNEW))
            beep ();
        }
@@ -531,6 +531,9 @@ int mutt_index_menu (void)
      else
        do_buffy_notify = 1;
     }
+
+    if(option(OPTSIDEBAR))
+        menu->redraw |= REDRAW_SIDEBAR;
 
     if (op != -1)
       mutt_curs_set (0);
@@ -540,6 +543,9 @@ int mutt_index_menu (void)
       menu_redraw_full (menu);
       draw_sidebar(menu->menu);
       mutt_show_error ();
+    } else if(menu->redraw & REDRAW_SIDEBAR) {
+        draw_sidebar(menu->menu);
+        menu->redraw &= ~REDRAW_SIDEBAR;
     }
 
     if (menu->menu == MENU_MAIN)

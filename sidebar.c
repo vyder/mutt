@@ -195,6 +195,7 @@ int draw_sidebar(int menu) {
                         saveSidebarWidth = SidebarWidth;
                         SidebarWidth = 0;
                 } else if(!prev_show_value && option(OPTSIDEBAR)) {
+                        mutt_buffy_check(1); /* we probably have bad or no numbers */
                         SidebarWidth = saveSidebarWidth;
                 }
                 prev_show_value = option(OPTSIDEBAR);
