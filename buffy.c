@@ -348,6 +348,9 @@ void buffy_maildir_update (BUFFY* mailbox)
   struct dirent *de;
   char *p;
 
+  if(!option(OPTSIDEBAR))
+      return;
+
   mailbox->msgcount = 0;
   mailbox->msg_unread = 0;
   mailbox->msg_flagged = 0;
@@ -439,6 +442,8 @@ void buffy_mbox_update (BUFFY* mailbox, struct stat *sb)
 {
   CONTEXT *ctx = NULL;
 
+  if(!option(OPTSIDEBAR))
+      return;
   if(mailbox->sb_last_checked > sb->st_mtime && mailbox->msgcount != 0)
       return; /* no check necessary */
 

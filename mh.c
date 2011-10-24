@@ -250,6 +250,9 @@ void mh_buffy_update (const char *path, int *msgcount, int *msg_unread, int *msg
   struct mh_sequences mhs;
   memset (&mhs, 0, sizeof (mhs));
 
+  if(!option(OPTSIDEBAR))
+      return;
+
   if (mh_read_sequences (&mhs, path) < 0)
     return;
 
