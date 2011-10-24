@@ -443,6 +443,7 @@ void buffy_mbox_update (BUFFY* mailbox)
   {
     mailbox->msgcount = ctx->msgcount;
     mailbox->msg_unread = ctx->unread;
+    mailbox->msg_flagged = ctx->flagged;
     mx_close_mailbox(ctx, 0);
   }
 }
