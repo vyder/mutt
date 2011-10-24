@@ -399,6 +399,7 @@ void buffy_maildir_update (BUFFY* mailbox)
     }
   }
 
+  mailbox->sb_last_checked = time(NULL);
   closedir (dirp);
 }
 
@@ -434,9 +435,12 @@ static int buffy_mbox_hasnew (BUFFY* mailbox, struct stat *sb)
 }
 
 /* update message counts for the sidebar */
-void buffy_mbox_update (BUFFY* mailbox)
+void buffy_mbox_update (BUFFY* mailbox, struct stat *sb)
 {
   CONTEXT *ctx = NULL;
+
+  if(mailbox->sb_last_checked > sb->st_mtime && mailbox->msgcount != 0)
+      return; /* no check necessary */
 
   ctx = mx_open_mailbox(mailbox->path, M_READONLY | M_QUIET | M_NOSORT | M_PEEK, NULL);
   if(ctx)
@@ -444,6 +448,7 @@ void buffy_mbox_update (BUFFY* mailbox)
     mailbox->msgcount = ctx->msgcount;
     mailbox->msg_unread = ctx->unread;
     mailbox->msg_flagged = ctx->flagged;
+    mailbox->sb_last_checked = time(NULL);
     mx_close_mailbox(ctx, 0);
   }
 }
@@ -521,7 +526,7 @@ int mutt_buffy_check (int force)
       {
       case M_MBOX:
       case M_MMDF:
-	buffy_mbox_update (tmp);
+	buffy_mbox_update (tmp, &sb);
 	if (buffy_mbox_hasnew (tmp, &sb) > 0)
 	  BuffyCount++;
 	break;
@@ -533,7 +538,7 @@ int mutt_buffy_check (int force)
 	break;
 
       case M_MH:
-	mh_buffy_update (tmp->path, &tmp->msgcount, &tmp->msg_unread, &tmp->msg_flagged);
+	mh_buffy_update (tmp->path, &tmp->msgcount, &tmp->msg_unread, &tmp->msg_flagged, &tmp->sb_last_checked);
 	if ((tmp->new = mh_buffy (tmp->path)) > 0)
 	  BuffyCount++;
 	break;

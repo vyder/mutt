@@ -244,7 +244,7 @@ int mh_buffy (const char *path)
   return r;
 }
 
-void mh_buffy_update (const char *path, int *msgcount, int *msg_unread, int *msg_flagged)
+void mh_buffy_update (const char *path, int *msgcount, int *msg_unread, int *msg_flagged, time_t *sb_last_checked)
 {
   int i;
   struct mh_sequences mhs;
@@ -264,6 +264,7 @@ void mh_buffy_update (const char *path, int *msgcount, int *msg_unread, int *msg
     if (mhs_check (&mhs, i) & MH_SEQ_FLAGGED)
       msg_flagged++;
   mhs_free_sequences (&mhs);
+  *sb_last_checked = time(NULL);
 }
 
 static int mh_mkstemp (CONTEXT * dest, FILE ** fp, char **tgt)
