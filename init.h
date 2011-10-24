@@ -1969,6 +1969,11 @@ struct option_t MuttVars[] = {
   ** .pp
   ** The width of the sidebar.
   */
+  { "sidebar_shortpath", DT_BOOL, R_BOTH, OPTSIDEBARSHORTPATH, 0 },
+  /*
+  ** .pp
+  ** Should the sidebar shorten the path showed.
+  */
   { "pgp_use_gpg_agent", DT_BOOL, R_NONE, OPTUSEGPGAGENT, 0},
   /*
   ** .pp

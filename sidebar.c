@@ -258,14 +258,23 @@ int draw_sidebar(int menu) {
 			int i;
 			tmp_folder_name = tmp->path + strlen(Maildir);
 			for (i = 0; i < strlen(tmp->path) - strlen(Maildir); i++) {
-				if (tmp_folder_name[i] == '/') sidebar_folder_depth++;
+ 				if (tmp_folder_name[i] == '/'  || tmp_folder_name[i] == '.') sidebar_folder_depth++;
 			}   
 			if (sidebar_folder_depth > 0) {
-				sidebar_folder_name = malloc(strlen(basename(tmp->path)) + sidebar_folder_depth + 1);
+ 				if (option(OPTSIDEBARSHORTPATH)) {
+ 					tmp_folder_name = strrchr(tmp->path, '.');
+ 					if (tmp_folder_name == NULL)
+ 						tmp_folder_name = tmp->path;
+ 					else
+						tmp_folder_name++;
+ 				}
+ 				else
+ 					tmp_folder_name = tmp->path;
+ 				sidebar_folder_name = malloc(strlen(basename(tmp_folder_name)) + sidebar_folder_depth + 1);
 				for (i=0; i < sidebar_folder_depth; i++)
 					sidebar_folder_name[i]=' ';
 				sidebar_folder_name[i]=0;
-				strncat(sidebar_folder_name, basename(tmp->path), strlen(basename(tmp->path)) + sidebar_folder_depth);
+ 				strncat(sidebar_folder_name, basename(tmp_folder_name), strlen(basename(tmp_folder_name)) + sidebar_folder_depth);
 			}
 		}
 		printw( "%.*s", SidebarWidth - delim_len + 1,
