@@ -54,6 +54,35 @@ void calc_boundaries (int menu)
 	for ( ; tmp->next != 0; tmp = tmp->next )
 		tmp->next->prev = tmp;
 
+	if (option(OPTSIDEBARSORT)) {
+		int needsort=1;
+		BUFFY *prev;
+		BUFFY *next;
+		BUFFY *tmp2;
+		while (needsort==1) {
+			needsort=0;
+			tmp = Incoming;
+			for ( ; tmp ; tmp=tmp->next ) {
+				if (tmp->next != NULL && strcoll(tmp->path, tmp->next->path) > 0) {
+					needsort=1;
+					prev = tmp->prev;
+					next = tmp->next;
+					if (prev != NULL)
+						prev->next = next;
+					else
+						Incoming = next;
+					next->prev = prev;
+					tmp2 = next->next;
+					next->next = tmp;
+					tmp->prev = next;
+					tmp->next = tmp2;
+					if (tmp2 != NULL)
+						tmp2->prev = tmp;
+				}
+			}
+		}
+	}
+
 	if ( TopBuffy == 0 && BottomBuffy == 0 )
 		TopBuffy = Incoming;
 	if ( BottomBuffy == 0 ) {

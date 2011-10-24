@@ -1974,6 +1974,11 @@ struct option_t MuttVars[] = {
   ** .pp
   ** Should the sidebar shorten the path showed.
   */
+  { "sidebar_sort", DT_BOOL, R_BOTH, OPTSIDEBARSORT, 0 },
+  /*
+  ** .pp
+  ** Should the sidebar be sorted.
+  */
   { "pgp_use_gpg_agent", DT_BOOL, R_NONE, OPTUSEGPGAGENT, 0},
   /*
   ** .pp
