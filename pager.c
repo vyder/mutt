@@ -1573,6 +1573,7 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
 
   int bodyoffset = 1;			/* offset of first line of real text */
   int statusoffset = 0; 		/* offset for the status bar */
+  int statuswidth;
   int helpoffset = LINES - 2;		/* offset for the help bar. */
   int bodylen = LINES - 2 - bodyoffset; /* length of displayable area */
 
@@ -1790,6 +1791,8 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
       hfi.ctx = Context;
       hfi.pager_progress = pager_progress_str;
 
+      statuswidth = COLS - (option(OPTSTATUSONTOP) && PagerIndexLines > 0 ? SidebarWidth : 0);
+
       if (last_pos < sb.st_size - 1)
 	snprintf(pager_progress_str, sizeof(pager_progress_str), OFF_T_FMT "%%", (100 * last_offset / sb.st_size));
       else
@@ -1798,22 +1801,29 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
       /* print out the pager status bar */
       SETCOLOR (MT_COLOR_STATUS);
       BKGDSET (MT_COLOR_STATUS);
-      CLEARLINE_WIN (statusoffset);
+      if(option(OPTSTATUSONTOP) && PagerIndexLines > 0) {
+          CLEARLINE_WIN (statusoffset);
+      } else {
+          CLEARLINE (statusoffset);
+          DrawFullLine = 1; /* for mutt_make_string_info */
+      }
 
       if (IsHeader (extra) || IsMsgAttach (extra))
       {
-	size_t l1 = (COLS-SidebarWidth) * MB_LEN_MAX;
+	size_t l1 = statuswidth * MB_LEN_MAX;
 	size_t l2 = sizeof (buffer);
 	hfi.hdr = (IsHeader (extra)) ? extra->hdr : extra->bdy->hdr;
 	mutt_make_string_info (buffer, l1 < l2 ? l1 : l2, NONULL (PagerFmt), &hfi, M_FORMAT_MAKEPRINT);
-	mutt_paddstr (COLS-SidebarWidth, buffer);
+	mutt_paddstr (statuswidth, buffer);
       }
       else
       {
 	char bn[STRING];
 	snprintf (bn, sizeof (bn), "%s (%s)", banner, pager_progress_str);
-	mutt_paddstr (COLS-SidebarWidth, bn);
+	mutt_paddstr (statuswidth, bn);
       }
+      if(!option(OPTSTATUSONTOP) || PagerIndexLines == 0)
+          DrawFullLine = 0; /* reset */
       BKGDSET (MT_COLOR_NORMAL);
       SETCOLOR (MT_COLOR_NORMAL);
     }
@@ -1828,10 +1838,11 @@ mutt_pager (const char *banner, const char *fname, int flags, pager_t *extra)
       /* print out the index status bar */
       menu_status_line (buffer, sizeof (buffer), index, NONULL(Status));
  
-      move (indexoffset + (option (OPTSTATUSONTOP) ? 0 : (indexlen - 1)), SidebarWidth);
+      move (indexoffset + (option (OPTSTATUSONTOP) ? 0 : (indexlen - 1)),
+          (option(OPTSTATUSONTOP) ? 0: SidebarWidth));
       SETCOLOR (MT_COLOR_STATUS);
       BKGDSET (MT_COLOR_STATUS);
-      mutt_paddstr (COLS-SidebarWidth, buffer);
+      mutt_paddstr (COLS - (option(OPTSTATUSONTOP) ? 0 : SidebarWidth), buffer);
       SETCOLOR (MT_COLOR_NORMAL);
       BKGDSET (MT_COLOR_NORMAL);
     }

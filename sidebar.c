@@ -47,6 +47,8 @@ void calc_boundaries (int menu)
 {
 	BUFFY *tmp = Incoming;
 
+	int count = LINES - 2 - (option(OPTHELP) ? 1 : 0);
+
 	if ( known_lines != LINES ) {
 		TopBuffy = BottomBuffy = 0;
 		known_lines = LINES;
@@ -86,13 +88,11 @@ void calc_boundaries (int menu)
 	if ( TopBuffy == 0 && BottomBuffy == 0 )
 		TopBuffy = Incoming;
 	if ( BottomBuffy == 0 ) {
-		int count = LINES - 2 - (menu != MENU_PAGER || option(OPTSTATUSONTOP));
 		BottomBuffy = TopBuffy;
 		while ( --count && BottomBuffy->next )
 			BottomBuffy = BottomBuffy->next;
 	}
 	else if ( TopBuffy == CurBuffy->next ) {
-		int count = LINES - 2 - (menu != MENU_PAGER);
 		BottomBuffy = CurBuffy;
 		tmp = BottomBuffy;
 		while ( --count && tmp->prev)
@@ -100,7 +100,6 @@ void calc_boundaries (int menu)
 		TopBuffy = tmp;
 	}
 	else if ( BottomBuffy == CurBuffy->prev ) {
-		int count = LINES - 2 - (menu != MENU_PAGER);
 		TopBuffy = CurBuffy;
 		tmp = TopBuffy;
 		while ( --count && tmp->next )
@@ -165,8 +164,11 @@ void set_curbuffy(char buf[LONG_STRING])
 
 int draw_sidebar(int menu) {
 
-	int lines = option(OPTHELP) ? 1 : 0;
-    lines += option(OPTSTATUSONTOP) ? 1 : 0;
+	int lines = 0;
+	int SidebarHeight;
+
+	if(option(OPTSTATUSONTOP) || option(OPTHELP))
+		lines++; /* either one will occupy the first line */
 
 	BUFFY *tmp;
 #ifndef USE_SLANG_CURSES
@@ -237,7 +239,11 @@ int draw_sidebar(int menu) {
 
 	/* draw the divider */
 
-	for ( ; lines < LINES-1-(menu != MENU_PAGER || option(OPTSTATUSONTOP)); lines++ ) {
+	SidebarHeight =  LINES - 1;
+	if(option(OPTHELP) || !option(OPTSTATUSONTOP))
+		SidebarHeight--;
+
+	for ( ; lines < SidebarHeight; lines++ ) {
 		move(lines, SidebarWidth - delim_len);
 		addstr(NONULL(SidebarDelim));
 #ifndef USE_SLANG_CURSES
@@ -246,8 +252,9 @@ int draw_sidebar(int menu) {
 	}
 
 	if ( Incoming == 0 ) return 0;
-	lines = option(OPTHELP) ? 1 : 0; /* go back to the top */
-    lines += option(OPTSTATUSONTOP) ? 1 : 0;
+	lines = 0;
+	if(option(OPTSTATUSONTOP) || option(OPTHELP))
+		lines++; /* either one will occupy the first line */
 
 	if ( known_lines != LINES || TopBuffy == 0 || BottomBuffy == 0 ) 
 		calc_boundaries(menu);
@@ -257,7 +264,7 @@ int draw_sidebar(int menu) {
 
 	SETCOLOR(MT_COLOR_NORMAL);
 
-	for ( ; tmp && lines < LINES-1 - (menu != MENU_PAGER || option(OPTSTATUSONTOP)); tmp = tmp->next ) {
+	for ( ; tmp && lines < SidebarHeight; tmp = tmp->next ) {
 		if ( tmp == CurBuffy )
 			SETCOLOR(MT_COLOR_INDICATOR);
 		else if ( tmp->msg_unread > 0 )
@@ -314,7 +321,7 @@ int draw_sidebar(int menu) {
 		lines++;
 	}
 	SETCOLOR(MT_COLOR_NORMAL);
-	for ( ; lines < LINES-1 - (menu != MENU_PAGER || option(OPTSTATUSONTOP)); lines++ ) {
+	for ( ; lines < SidebarHeight; lines++ ) {
 		int i = 0;
 		move( lines, 0 );
 		for ( ; i < SidebarWidth - delim_len; i++ )
