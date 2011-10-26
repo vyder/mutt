@@ -118,6 +118,7 @@ WHERE char *SendCharset;
 WHERE char *Sendmail;
 WHERE char *Shell;
 WHERE char *SidebarDelim;
+WHERE char *SidebarFormat;
 WHERE char *Signature;
 WHERE char *SimpleSearch;
 #if USE_SMTP

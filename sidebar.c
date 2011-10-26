@@ -36,16 +36,9 @@ static BUFFY *TopBuffy = 0;
 static BUFFY *BottomBuffy = 0;
 static int known_lines = 0;
 
-static int quick_log10(int n)
-{
-        char string[32];
-        sprintf(string, "%d", n);
-        return strlen(string);
-}
+void calc_boundaries() {
 
-void calc_boundaries (int menu)
-{
-	BUFFY *tmp = Incoming;
+    BUFFY *tmp = Incoming;
 
 	int count = LINES - 2 - (option(OPTHELP) ? 1 : 0);
 
@@ -108,38 +101,95 @@ void calc_boundaries (int menu)
 	}
 }
 
-char *make_sidebar_entry(char *box, int size, int new, int flagged)
+static const char *
+sidebar_format_str (char *dest,
+			size_t destlen,
+			size_t col,
+			char op,
+			const char *src,
+			const char *prefix,
+			const char *ifstring,
+			const char *elsestring,
+			unsigned long data,
+			format_flag flags)
 {
-	static char *entry = 0;
-	char *c;
-	int i = 0;
-	int delim_len = strlen(SidebarDelim);
+/* casting from unsigned long - srsly?! */
+struct sidebar_entry *sbe = (struct sidebar_entry *) data;
+unsigned int optional;
+char fmt[SHORT_STRING], buf[SHORT_STRING];
 
-	c = realloc(entry, SidebarWidth - delim_len + 2);
-	if ( c ) entry = c;
-	entry[SidebarWidth - delim_len + 1] = 0;
-	for (; i < SidebarWidth - delim_len + 1; entry[i++] = ' ' );
-	i = strlen(box);
-	strncpy( entry, box, i < (SidebarWidth - delim_len + 1) ? i : (SidebarWidth - delim_len + 1) );
+optional = flags & M_FORMAT_OPTIONAL;
 
-        if (size == -1)
-                sprintf(entry + SidebarWidth - delim_len - 3, "?");
-        else if ( new ) {
-          if (flagged > 0) {
-              sprintf(
-		        entry + SidebarWidth - delim_len - 5 - quick_log10(size) - quick_log10(new) - quick_log10(flagged),
-		        "% d(%d)[%d]", size, new, flagged);
-          } else {
-              sprintf(
-                      entry + SidebarWidth - delim_len - 3 - quick_log10(size) - quick_log10(new),
-                      "% d(%d)", size, new);
-          }
-        } else if (flagged > 0) {
-              sprintf( entry + SidebarWidth - delim_len - 3 - quick_log10(size) - quick_log10(flagged), "% d[%d]", size, flagged);
-        } else {
-              sprintf( entry + SidebarWidth - delim_len - 1 - quick_log10(size), "% d", size);
-        }
-	return entry;
+switch(op) {
+	case 'F':
+		if(!optional) {
+			snprintf (fmt, sizeof (fmt), "%%%sd", prefix);
+			snprintf (dest, destlen, fmt, sbe->flagged);
+		} else if(sbe->flagged == 0) {
+			optional = 0;
+		}
+		break;
+
+	case '!':
+		if(sbe->flagged == 0)
+			mutt_format_s(dest, destlen, prefix, "");
+		if(sbe->flagged == 1)
+			mutt_format_s(dest, destlen, prefix, "!");
+		if(sbe->flagged == 2)
+			mutt_format_s(dest, destlen, prefix, "!!");
+		if(sbe->flagged > 2) {
+			snprintf (buf, sizeof (buf), "%d!", sbe->flagged);
+			mutt_format_s(dest, destlen, prefix, buf);
+		}
+		break;
+
+	case 'S':
+		snprintf (fmt, sizeof (fmt), "%%%sd", prefix);
+		snprintf (dest, destlen, fmt, sbe->size);
+		break;
+
+	case 'N':
+		if(!optional) {
+			snprintf (fmt, sizeof (fmt), "%%%sd", prefix);
+			snprintf (dest, destlen, fmt, sbe->new);
+		} else if(sbe->new == 0) {
+			optional = 0;
+		}
+		break;
+
+	case 'B':
+		mutt_format_s(dest, destlen, prefix, sbe->box);
+		break;
+	}
+
+	if(optional)
+		mutt_FormatString (dest, destlen, col, ifstring, sidebar_format_str, (unsigned long) sbe, flags);
+	else if (flags & M_FORMAT_OPTIONAL)
+		mutt_FormatString (dest, destlen, col, elsestring, sidebar_format_str, (unsigned long) sbe, flags);
+
+	return (src);
+}
+
+char *make_sidebar_entry(char *box, unsigned int size, unsigned int new, unsigned int flagged) {
+    static char *entry = 0;
+    struct sidebar_entry sbe;
+    int SBvisual;
+
+    SBvisual = SidebarWidth - strlen(SidebarDelim);
+    if (SBvisual < 1)
+        return NULL;
+
+    sbe.new = new;
+    sbe.flagged = flagged;
+    sbe.size = size;
+    strncpy(sbe.box, box, 31);
+
+    safe_realloc(&entry, SBvisual + 2);
+    entry[SBvisual + 1] = '\0';
+
+    mutt_FormatString (entry, SBvisual+1, 0, SidebarFormat, sidebar_format_str, (unsigned long) &sbe, 0);
+
+    return entry;
 }
 
 void set_curbuffy(char buf[LONG_STRING])

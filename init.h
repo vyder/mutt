@@ -1979,6 +1979,16 @@ struct option_t MuttVars[] = {
   ** .pp
   ** Should the sidebar be sorted.
   */
+  {"sidebar_format", DT_STR, R_NONE, UL &SidebarFormat, UL "%B%?F? [%F]?%* %?N?%N/?%4S"},
+  /*
+  ** .pp
+  ** Format string for the sidebar. The sequences `%N', `%F' and `%S'
+  ** will be replaced by the number of new or flagged messages or the total
+  ** size of them mailbox. `%B' will be replaced with the name of the mailbox.
+  ** The `%!' sequence will be expanded to `!' if there is one flagged message;
+  ** to `!!' if there are two flagged messages; and to `n!' for n flagged
+  ** messages, n>2.
+  */
   { "pgp_use_gpg_agent", DT_BOOL, R_NONE, OPTUSEGPGAGENT, 0},
   /*
   ** .pp
