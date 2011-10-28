@@ -340,7 +340,7 @@ int draw_sidebar(int menu) {
 		int sidebar_folder_depth = 0;
 		char *sidebar_folder_name;
 		sidebar_folder_name = mutt_basename(tmp->path);
-		if ( maildir_is_prefix ) {
+		if ( maildir_is_prefix && option(OPTSIDEBARFOLDERINDENT) ) {
 			char *tmp_folder_name;
 			int i;
 			tmp_folder_name = tmp->path + strlen(Maildir);

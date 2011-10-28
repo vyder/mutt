@@ -1989,6 +1989,12 @@ struct option_t MuttVars[] = {
   ** to `!!' if there are two flagged messages; and to `n!' for n flagged
   ** messages, n>2.
   */
+  { "sidebar_folderindent", DT_BOOL, R_BOTH, OPTSIDEBARFOLDERINDENT, 0 },
+  /*
+  ** .pp
+  ** Should folders be indented in the sidebar.
+  */
+
   { "pgp_use_gpg_agent", DT_BOOL, R_NONE, OPTUSEGPGAGENT, 0},
   /*
   ** .pp
