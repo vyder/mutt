@@ -995,6 +995,13 @@ int main (int argc, char **argv)
       strfcpy (folder, NONULL(Spoolfile), sizeof (folder));
     mutt_expand_path (folder, sizeof (folder));
 
+    {
+      char tmpfolder[_POSIX_PATH_MAX];
+      strfcpy (tmpfolder, folder, sizeof (tmpfolder));
+      if(!realpath(tmpfolder, folder))
+          strfcpy (folder, tmpfolder, sizeof (tmpfolder));
+    }
+
     mutt_str_replace (&CurrentFolder, folder);
     mutt_str_replace (&LastFolder, folder);
 

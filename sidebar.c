@@ -200,7 +200,7 @@ void set_curbuffy(char buf[LONG_STRING])
     return;
 
   while(1) {
-    if(!strcmp(tmp->path, buf)) {
+    if(!strcmp(tmp->path, buf) || !strcmp(tmp->realpath, buf)) {
       CurBuffy = tmp;
       break;
     }
@@ -326,7 +326,8 @@ int draw_sidebar(int menu) {
 			SETCOLOR(MT_COLOR_NORMAL);
 
 		move( lines, 0 );
-		if ( Context && !strcmp( tmp->path, Context->path ) ) {
+		if ( Context && (!strcmp(tmp->path, Context->path)||
+				 !strcmp(tmp->realpath, Context->path)) ) {
 			tmp->msg_unread = Context->unread;
 			tmp->msgcount = Context->msgcount;
 			tmp->msg_flagged = Context->flagged;

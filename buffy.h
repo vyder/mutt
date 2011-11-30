@@ -23,6 +23,7 @@
 typedef struct buffy_t
 {
   char path[_POSIX_PATH_MAX];
+  char realpath[_POSIX_PATH_MAX];
   off_t size;
   struct buffy_t *next;
   struct buffy_t *prev;

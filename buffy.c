@@ -196,9 +196,13 @@ void mutt_update_mailbox (BUFFY * b)
 static BUFFY *buffy_new (const char *path)
 {
   BUFFY* buffy;
+  char rp[PATH_MAX];
+  char *r;
 
   buffy = (BUFFY *) safe_calloc (1, sizeof (BUFFY));
   strfcpy (buffy->path, path, sizeof (buffy->path));
+  r = realpath(path, rp);
+  strfcpy (buffy->realpath, r ? rp : path, sizeof (buffy->realpath));
   buffy->next = NULL;
   buffy->magic = 0;
 
@@ -243,8 +247,8 @@ int mutt_parse_mailboxes (BUFFER *path, BUFFER *s, unsigned long data, BUFFER *e
     p = realpath (buf, f1);
     for (tmp = &Incoming; *tmp; tmp = &((*tmp)->next))
     {
-      q = realpath ((*tmp)->path, f2);
-      if (mutt_strcmp (p ? p : buf, q ? q : (*tmp)->path) == 0)
+      q = (*tmp)->realpath;
+      if (mutt_strcmp (p ? p : buf, q) == 0)
       {
 	dprint(3,(debugfile,"mailbox '%s' already registered as '%s'\n", buf, (*tmp)->path));
 	break;
