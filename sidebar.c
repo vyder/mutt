@@ -387,7 +387,8 @@ void set_buffystats(CONTEXT* Context)
 {
         BUFFY *tmp = Incoming;
         while(tmp) {
-                if(Context && !strcmp(tmp->path, Context->path)) {
+                if(Context && (!strcmp(tmp->path, Context->path) ||
+                               !strcmp(tmp->realpath, Context->path))) {
 			tmp->msg_unread = Context->unread;
 			tmp->msgcount = Context->msgcount;
                         break;

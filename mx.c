@@ -734,6 +734,8 @@ void mx_fastclose_mailbox (CONTEXT *ctx)
   mutt_clear_threads (ctx);
   for (i = 0; i < ctx->msgcount; i++)
     mutt_free_header (&ctx->hdrs[i]);
+  ctx->msgcount -= ctx->deleted;
+  set_buffystats(ctx);
   FREE (&ctx->hdrs);
   FREE (&ctx->v2r);
   FREE (&ctx->path);
@@ -827,6 +829,8 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
     if (!ctx->hdrs[i]->deleted && ctx->hdrs[i]->read 
         && !(ctx->hdrs[i]->flagged && option (OPTKEEPFLAGGED)))
       read_msgs++;
+    if (ctx->hdrs[i]->deleted && !ctx->hdrs[i]->read)
+      ctx->unread--;
   }
 
   if (read_msgs && quadoption (OPT_MOVE) != M_NO)
