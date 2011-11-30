@@ -301,11 +301,6 @@ static int buffy_maildir_hasnew (BUFFY* mailbox)
 
   snprintf (path, sizeof (path), "%s/new", mailbox->path);
 
-  if (option(OPTSIDEBAR) && mailbox->msg_unread > 0) {
-      mailbox->new = 1;
-      return 1;
-  }
-
   /* when $mail_check_recent is set, if the new/ directory hasn't been modified since
    * the user last exited the mailbox, then we know there is no recent mail.
    */
@@ -313,6 +308,11 @@ static int buffy_maildir_hasnew (BUFFY* mailbox)
   {
     if (stat(path, &sb) == 0 && sb.st_mtime < mailbox->last_visited)
       return 0;
+  }
+
+  if (option(OPTSIDEBAR) && mailbox->msg_unread > 0) {
+      mailbox->new = 1;
+      return 1;
   }
 
   if ((dirp = opendir (path)) == NULL)
@@ -426,7 +426,7 @@ static int buffy_mbox_hasnew (BUFFY* mailbox, struct stat *sb)
   else
     statcheck = sb->st_mtime > sb->st_atime
       || (mailbox->newly_created && sb->st_ctime == sb->st_mtime && sb->st_ctime == sb->st_atime);
-  if (statcheck)
+  if ((!option(OPTSIDEBAR) && statcheck) || (option(OPTSIDEBAR) && mailbox->msg_unread > 0))
   {
     if (!option(OPTMAILCHECKRECENT) || sb->st_mtime > mailbox->last_visited)
     {
@@ -442,11 +442,6 @@ static int buffy_mbox_hasnew (BUFFY* mailbox, struct stat *sb)
   if (mailbox->newly_created &&
       (sb->st_ctime != sb->st_mtime || sb->st_ctime != sb->st_atime))
     mailbox->newly_created = 0;
-
-  if (option(OPTSIDEBAR) && mailbox->msg_unread > 0) {
-      mailbox->new = 1;
-      rc = 1;
-  }
 
   return rc;
 }

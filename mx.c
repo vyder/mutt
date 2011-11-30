@@ -722,7 +722,8 @@ void mx_fastclose_mailbox (CONTEXT *ctx)
 
   /* never announce that a mailbox we've just left has new mail. #3290
    * XXX: really belongs in mx_close_mailbox, but this is a nice hook point */
-  mutt_buffy_setnotified(ctx->path);
+  if(!ctx->peekonly)
+    mutt_buffy_setnotified(ctx->path);
 
   if (ctx->mx_close)
     ctx->mx_close (ctx);
