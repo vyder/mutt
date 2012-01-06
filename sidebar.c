@@ -391,6 +391,7 @@ void set_buffystats(CONTEXT* Context)
                                !strcmp(tmp->realpath, Context->path))) {
 			tmp->msg_unread = Context->unread;
 			tmp->msgcount = Context->msgcount;
+			tmp->msg_flagged = Context->flagged;
                         break;
                 }
                 tmp = tmp->next;

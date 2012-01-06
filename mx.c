@@ -832,6 +832,8 @@ int mx_close_mailbox (CONTEXT *ctx, int *index_hint)
       read_msgs++;
     if (ctx->hdrs[i]->deleted && !ctx->hdrs[i]->read)
       ctx->unread--;
+    if (ctx->hdrs[i]->deleted && ctx->hdrs[i]->flagged)
+      ctx->flagged--;
   }
 
   if (read_msgs && quadoption (OPT_MOVE) != M_NO)
