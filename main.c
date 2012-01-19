@@ -50,6 +50,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <limits.h>
 #include <sys/utsname.h>
 
 #ifdef HAVE_GETOPT_H
@@ -525,7 +526,7 @@ init_extended_keys();
 
 int main (int argc, char **argv)
 {
-  char folder[_POSIX_PATH_MAX] = "";
+  char folder[PATH_MAX] = "";
   char *subject = NULL;
   char *includeFile = NULL;
   char *draftFile = NULL;
@@ -996,7 +997,7 @@ int main (int argc, char **argv)
     mutt_expand_path (folder, sizeof (folder));
 
     {
-      char tmpfolder[_POSIX_PATH_MAX];
+      char tmpfolder[PATH_MAX];
       strfcpy (tmpfolder, folder, sizeof (tmpfolder));
       if(!realpath(tmpfolder, folder))
           strfcpy (folder, tmpfolder, sizeof (tmpfolder));
